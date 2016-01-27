@@ -66,12 +66,34 @@ exports.getFilePaths = function(path, depth) {
 
 exports.readFile = function(path) {
     return new Promise(function(resolve, reject) {
-        if(typeof path !== "string" || )
+        if(typeof path !== "string") {
+            fs.readFile(path, 'utf8', function(err, data) {
+                if(err){
+                    reject(err);
+                }
+                else {
+                    resolve(data);
+                }
+            })
+        }
+        else {
+            reject("Path not passed as a string");
+        }
     });
 };
 
 exports.readFiles = function(paths) {
     return new Promise(function(resolve, reject) {
-
+        var obj = {};
+        paths.forEach(function(path) {
+            exports.readFile(path)
+                .then(function(results){
+                    obj[path] = results;
+                })
+                .catch(function(err){
+                    reject("One or more files could not be read.");
+                })
+        });
+        resolve(obj);
     });
 };
