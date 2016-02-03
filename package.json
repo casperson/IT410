@@ -1,0 +1,28 @@
+{
+  "name": "package.json",
+  "version": "1.0.0",
+  "description": "This contains all the depencies for the IT410 repo",
+  "main": "index.js",
+  "dependencies": {
+    "bluebird": "^3.2.1",
+    "chai": "^3.4.1",
+    "command-line-args": "^2.1.4"
+  },
+  "devDependencies": {
+    "mocha": "^2.4.4"
+  },
+  "scripts": {
+    "test": "mocha",
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/casperson/IT410.git"
+  },
+  "author": "Braden Casperson",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/casperson/IT410/issues"
+  },
+  "homepage": "https://github.com/casperson/IT410#readme"
+}
