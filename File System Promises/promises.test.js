@@ -48,20 +48,20 @@ describe('promises', function() {
 
     });
 
-    //describe('get all the file paths', function() {
-    //
-    //    it('returns paths as array of strings', function() {
-    //        return promises.getFilePaths("./testDir")
-    //            .then(function(result) {
-    //                expect(result).to.be.true;
-    //                return true;
-    //            })
-    //            .catch(function(err) {
-    //                throw err;
-    //            });
-    //    });
-    //
-    //});
+    describe('get all the file paths', function() {
+
+        it('returns paths as array of strings', function() {
+            return promises.getFilePaths("./testDir", 0)
+                .then(function(result) {
+                    expect(result).to.exist;
+                    return true;
+                })
+                .catch(function(err) {
+                    throw err;
+                });
+        });
+
+    });
 
     describe('read one file', function() {
 

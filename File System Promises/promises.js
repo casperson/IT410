@@ -1,5 +1,6 @@
 var fs = require('fs');
 var Promise = require('bluebird');
+var Path = require('path');
 
 exports.getPathType = function(path) {
     return new Promise(function(resolve, reject) {
@@ -25,52 +26,52 @@ exports.getPathType = function(path) {
     });
 };
 
-exports.getDirectoryTypes = function(path, depth, filter) {
-    var obj = {};
-    var promises = [];
+exports.readdir = function(path) {
+    return exports.getPathType(path)
+        .then(function(type) {
+            if (type !== 'directory') throw Error('Not a directory');
+            return new Promise(function(resolve, reject) {
+                fs.readdir(path, function(err, files) {
+                    if (err) return reject(err);
+                    return resolve(files);
+                });
+            });
+        });
+};
 
-    if (depth === undefined) depth = -1;
-    if (filter === undefined) {
-        filter = function(path, type) { return true; }
-    }
+exports.getDirectoryTypes = function(path, depth, filter) {
+    var result = {};
+
+    if (arguments.length < 2) depth = -1;
+    if (arguments.length < 3) filter = function() { return true };
 
     if (typeof depth !== "number") return Promise.reject("Depth must be a number");
     if (typeof filter !== "function") return Promise.reject("Filter must be a function");
     if (typeof path !== "string") return Promise.reject("Path must be a string");
 
-    return exports.getPathType(path)
-        .then(function(type) {
-            if (type === "directory") {
-                return fs.readdir(path, function(err, contents){
-                    console.error(err);
-                    contents.forEach(function (file) {
-                        var filePath = path + "/" + file;
-                        var p = exports.getPathType(filePath)
-                            .then(function (results) {
-                                if (filter(filePath, results)) obj[filePath] = results;
-                                if (results === "directory" && depth !== 0) {
-                                    return exports.getDirectoryTypes(filePath, depth - 1, filter)
-                                        .then(function (res) {
-                                            Object.assign(obj, res);
-                                        });
-                                }
-                            });
-                        promises.push(p);
+    return exports.readdir(path)
+        .then(function(files) {
+            var promises = [];
+            files.forEach(function(file) {
+                var fullPath = Path.resolve(path, file);
+                var promise = exports.getPathType(fullPath)
+                    .then(function(type) {
+                        if (filter(fullPath, type)) result[fullPath] = type;
+                        if (type === 'directory' && depth !== 0) {
+                            return exports.getDirectoryTypes(fullPath, depth - 1, filter)
+                                .then(function(map) {
+                                    Object.assign(result, map);
+                                });
+                        }
                     });
-                    return Promise.all(promises)
-                        .then(function (obj) {
-                            console.log(obj);
-                            return(obj);
-                        });
-                })
-            }
-            else {
-                return Promise.reject("path cannot be directory.");
-            }
+                promises.push(promise);
+            });
+            return Promise.all(promises)
+                .then(function() {
+                    return result;
+                });
         });
-
-
-};
+}
 
 exports.exists = function(path) {
     return new Promise(function(resolve, reject) {
@@ -95,27 +96,12 @@ exports.exists = function(path) {
 };
 
 exports.getFilePaths = function(path, depth) {
-    return new Promise(function(resolve, reject) {
-        var obj = {};
-        var promises = [];
-
-        if (depth === undefined) depth = -1;
-        if (typeof depth !== "number") return reject("Depth must be a number");
-        if (typeof path !== "string") return reject("Path must be a string");
-        if (typeof path === directory) {
-            var p = exports.getDirectoryTypes(path, depth)
-                .then(function (results) {
-                    console.log(results);
-                });
-            promises.push(p);
-
-            return Promise.all(promises)
-                .then(function (obj) {
-                    resolve(obj[0]);
-                });
-        }
-        else return reject("Path must be a directory");
-    });
+    return exports.getDirectoryTypes(path, depth, function(path, type){
+            return type ==='file';
+        })
+        .then(function(resolution){
+            return Object.keys(resolution);
+        })
 };
 
 exports.readFile = function(path) {

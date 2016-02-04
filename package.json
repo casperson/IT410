@@ -6,7 +6,8 @@
   "dependencies": {
     "bluebird": "^3.2.1",
     "chai": "^3.4.1",
-    "command-line-args": "^2.1.4"
+    "command-line-args": "^2.1.4",
+    "express": "4.13.4"
   },
   "devDependencies": {
     "mocha": "^2.4.4"
